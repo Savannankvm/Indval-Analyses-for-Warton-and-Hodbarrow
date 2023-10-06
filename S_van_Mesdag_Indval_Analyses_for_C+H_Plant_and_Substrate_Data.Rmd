@@ -1,0 +1,178 @@
+---
+title: "S_van_Mesdag_Indval_Analyses_Six_Study_Sites"
+author: "Savanna van Mesdag"
+date: "2023-09-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+##The following is written by Savanna van Mesdag, going through the relevant coding and analyses for the biodiversity analyses for the Warton slag bank and the RSPB Hodbarrow 
+##Nature Reserve..
+
+#setwd#
+
+#To run the following code to carry out the analyses, the following packages must be installed#
+
+```{R}
+
+install.packages("vegan", repos = "	https://github.com/vegandevs/vegan")
+
+install.packages("labdsv", repos = "https://github.com/cran/labdsv")
+
+```
+
+##The packages also need to be loaded prior to running the analyses#
+
+```{R}
+
+library(vegan)
+library(labdsv)
+
+```
+
+#Loading the datasets for the two study sites...
+
+```{R}
+urlfile1 <- 'https://raw.githubusercontent.com/Savannankvm/Indval-Analyses-for-Warton-and-Hodbarrow/PhD-files/Carnforth_and_Hodbarrow_Species_with_site_names.csv'
+
+PlantSpecies <-read.csv(urlfile1 , row.names = 1)
+
+urlfile2 <- 'https://raw.githubusercontent.com/Savannankvm/Indval-Analyses-for-Warton-and-Hodbarrow/PhD-files/Carnforth_and_Hodbarrow_Chemistry_with_site_names.csv'
+
+PlantChemistry <-read.csv(urlfile2 , row.names = 1)
+
+```
+
+#Turning the datasets into dataframes to make them suitable for the Indval analyses
+
+```{R}
+
+PlantSpecies1 <- data.frame(PlantSpecies)
+
+PlantChemistry1 <- data.frame(PlantChemistry)
+
+```
+
+#Doing my first analysis, looking into indicator species for quartz.
+#Much of the code relates to developing a tidy summary with p values for the most
+#statistically significant indicator species
+
+```{R}
+
+clustQuartz <- cut(PlantChemistry1$Quartz, 5, labels=FALSE)
+QuartzIndval <- indval(as.matrix(PlantSpecies1), clustQuartz, type= "long")
+summary(QuartzIndval)
+gr <- QuartzIndval$maxcls[QuartzIndval$pval<=0.05]
+iv <- QuartzIndval$indcls[QuartzIndval$pval<=0.05]
+pv <- QuartzIndval$pval[QuartzIndval$pval<=0.05]
+fr <- apply(PlantSpecies1[,-1]>0, 2, sum)[QuartzIndval$pval<=0.05]
+Quartzindvalsummary <- data.frame(group=gr, indval=iv, pvalue=pv, freq=fr)
+Quartzindvalsummary <- Quartzindvalsummary[order(Quartzindvalsummary$group, 
+                                                 -Quartzindvalsummary$indval),]
+print(Quartzindvalsummary)
+summary(indval(as.matrix(PlantSpecies1), clustQuartz, type= "long"))
+print(indval(as.matrix(PlantSpecies1), clustQuartz, type= "long"))
+
+```
+
+#From the Quartzindvalsummary and from the automatic summary, Holcus spp. is shown to be the
+#indicator species for quartz, with an indval value of 0.790 and a low p value of 0.01. 
+#Holcus spp. is the indicator species for Quartz.
+
+#Now to do the same for calcite...
+
+```{R}
+
+clustCalcite <-cut(PlantChemistry1$Calcite, 5, labels=FALSE)
+summary(indval(as.matrix(PlantSpecies1), clustCalcite))
+CalciteIndval <- indval(as.matrix(PlantSpecies1), clustCalcite, type= "long")
+gr <- CalciteIndval$maxcls[CalciteIndval$pval<=0.05]
+iv <- CalciteIndval$indcls[CalciteIndval$pval<=0.05]
+pv <- CalciteIndval$pval[CalciteIndval$pval<=0.05]
+fr <- apply(PlantSpecies1[,-1]>0, 2, sum)[CalciteIndval$pval<=0.05]
+CalciteIndvalsummary <- data.frame(group=gr, indval=iv, pvalue=pv, freq=fr)
+CalciteIndvalsummary <- CalciteIndvalsummary[order(CalciteIndvalsummary$group, 
+                                            -CalciteIndvalsummary$indval),]
+print(CalciteIndvalsummary)
+print(indval(as.matrix(PlantSpecies1), clustCalcite))
+
+```
+
+#Holcus spp. is also the indicator species for calcite, with an indval value of 0.750 and
+#a significant p value of 0.043. Anthyllis vulneraria is also reported in the analysis, 
+#but it has a lower indval value and a higher p value, so it is not reported in the text.
+
+#After attempting an indval calculation for Gehlenite, no species came up. From now on,
+#only successful analyses, in which at least one species was determined as an indicator
+#species, will be included.
+
+```{R}
+
+clustPericlase <-cut(PlantChemistry1$Periclase, 5, labels=FALSE)
+PericlaseIndval <- indval(as.matrix(PlantSpecies1), clustPericlase, type= "long")
+gr <- PericlaseIndval$maxcls[PericlaseIndval$pval<=0.05]
+iv <- PericlaseIndval$indcls[PericlaseIndval$pval<=0.05]
+pv <- PericlaseIndval$pval[PericlaseIndval$pval<=0.05]
+fr <- apply(PlantSpecies1[,-1]>0, 2, sum)[PericlaseIndval$pval<=0.05]
+PericlaseIndvalsummary <- data.frame(group=gr, indval=iv, pvalue=pv, freq=fr)
+PericlaseIndvalsummary <- PericlaseIndvalsummary[order(PericlaseIndvalsummary$group, 
+                                              -PericlaseIndvalsummary$indval),]
+print(PericlaseIndvalsummary)
+summary(indval(as.matrix(PlantSpecies1), clustPericlase))
+print(indval(as.matrix(PlantSpecies1), clustPericlase))
+
+```
+
+#In the PericlaseIndvalsummary, Pilosella officinarum is reported as an indicator 
+#species. It has an indval number of 0.891 and a low p value of 0.027. Therefore, Pilosella 
+#officinarum is the indicator species for Periclase.
+
+#Looking at Akermanite....
+
+```{R}
+
+clustAkermanite <-cut(PlantChemistry1$Akermanite, 5, labels=FALSE)
+AkermaniteIndval <- indval(as.matrix(PlantSpecies1), clustAkermanite, type= "long")
+gr <- AkermaniteIndval$maxcls[AkermaniteIndval$pval<=0.05]
+iv <- AkermaniteIndval$indcls[AkermaniteIndval$pval<=0.05]
+pv <- AkermaniteIndval$pval[AkermaniteIndval$pval<=0.05]
+fr <- apply(PlantSpecies1[,-1]>0, 2, sum)[AkermaniteIndval$pval<=0.05]
+AkermaniteIndvalsummary <- data.frame(group=gr, indval=iv, pvalue=pv, freq=fr)
+AkermaniteIndvalsummary <- AkermaniteIndvalsummary[order(AkermaniteIndvalsummary$group, 
+                                                           -AkermaniteIndvalsummary$indval),]
+print(AkermaniteIndvalsummary)
+summary(indval(as.matrix(PlantSpecies1), clustAkermanite))
+print(indval(as.matrix(PlantSpecies1), clustAkermanite))
+
+```
+
+#Rhytidiadelphus squarrosus is reported as the indicator species for Akermanite, with an 
+#indval score of 0.650 and a p value of 0.024.
+
+```{R}
+
+clustNitratine <-cut(PlantChemistry1$Nitratine, 5, labels=FALSE)
+NitratineIndval <- indval(as.matrix(PlantSpecies1), clustNitratine, type= "long")
+gr <- NitratineIndval$maxcls[NitratineIndval$pval<=0.05]
+iv <- NitratineIndval$indcls[NitratineIndval$pval<=0.05]
+pv <- NitratineIndval$pval[NitratineIndval$pval<=0.05]
+fr <- apply(PlantSpecies1[,-1]>0, 2, sum)[NitratineIndval$pval<=0.05]
+NitratineIndvalsummary <- data.frame(group=gr, indval=iv, pvalue=pv, freq=fr)
+NitratineIndvalsummary <- NitratineIndvalsummary [order
+                (NitratineIndvalsummary$group,   -NitratineIndvalsummary$indval),]
+print(NitratineIndvalsummary)
+summary(indval(as.matrix(PlantSpecies1), clustNitratine))
+print(indval(as.matrix(PlantSpecies1), clustNitratine))
+
+```
+
+#Pilosella officinarum is reported as the indicator species for Nitratine, with a high
+#indval score of 0.860 and a low p value of 0.009.
+        
